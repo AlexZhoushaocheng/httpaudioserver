@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "qsharedpointer": "cpp",
+        "qobject": "cpp",
+        "*.tcc": "cpp",
+        "qregexp": "cpp",
+        "qmutex": "cpp",
+        "qstring": "cpp",
+        "fstream": "cpp",
+        "qfile": "cpp",
+        "qapplication": "cpp",
+        "qcoreapplication": "cpp"
+    }
+}
