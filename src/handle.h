@@ -26,4 +26,16 @@ public:
     int level{0};
 };
 
+using HandleFunc = std::function<void (QHttpRequest *, QHttpResponse *)>;
+
+class SimpleHandle : public Handle
+{
+public:
+    SimpleHandle(QHttpRequest::HttpMethod mothod, const QString path, int l, HandleFunc &&func);
+
+    void handle(QHttpRequest *req, QHttpResponse *resp) override;
+
+private:
+    HandleFunc handle_func;
+};
 #endif // HANDLE_HEAD_

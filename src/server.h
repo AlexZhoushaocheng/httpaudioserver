@@ -4,6 +4,7 @@
 #include <QSharedPointer>
 #include "qhttpserver.h"
 #include "handle.h"
+#include <functional>
 
 class Server : public QObject
 {
@@ -17,6 +18,8 @@ public:
     // void addHandle();
 
     void addHandle(QSharedPointer<Handle> h);
+
+    void addHandle(const QString& path, QHttpRequest::HttpMethod method, std::function<void (QHttpRequest *, QHttpResponse *)>&& function);
 
 private slots:
     void handleRequest(QHttpRequest *req, QHttpResponse *resp);

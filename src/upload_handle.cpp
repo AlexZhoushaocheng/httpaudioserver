@@ -3,33 +3,30 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include "player.h"
+#include "3rdparty/easylogging/easylogging++.h"
 
-UploadHandle::UploadHandle() : Handle(QHttpRequest::HTTP_POST, "upload_then_play/[^/]+", 0)
+/************************************* 被忽略的一些潜在风险 **************************************
+ * 
+ * 缺少超时检测
+ * 如果数据未传完断开
+ * 同时有多个请求上传同一份文件,可能出现打开文件失败
+*************************************************************************************/
+
+UploadHandle::UploadHandle() : Handle(QHttpRequest::HTTP_POST, "/audio/upload_then_play/[^/]+", 0)
 {
 }
 
 void UploadHandle::handle(QHttpRequest *req, QHttpResponse *resp)
 {    
-    if (!lock.try_lock())
-    {
-        //忙碌
-        QByteArray body = "busy";
-        resp->setHeader("Content-Length", QString::number(body.size()));
-        resp->writeHead(400);
-        resp->end(body);
-        return;
-    }
-    else
-    {
-        Pearser* parser = new Pearser(req, resp);
-        connect(parser, SIGNAL(success_done(QString)), this, SLOT(on_success_done(QString)));
-        lock.unlock();
-    }
+    LOG(INFO) << "开始处理文件上传请求..";
+    Pearser* parser = new Pearser(req, resp);
+    connect(parser, SIGNAL(success_done(QString)), this, SLOT(on_success_done(QString)));
 }
 
 
 void UploadHandle::on_success_done(QString filename)
 {
+    LOG(INFO) << "接收文件成功,文件名:" << filename.toStdString();
     Player::instance().play(filename);
 }
 
@@ -59,6 +56,7 @@ void Pearser::on_data(const QByteArray &data) {
         if (!ret)
         {
             // 打开文件失败
+            LOG(ERROR) << "保存音频，打开文件失败,文件名:" << m_pFile->fileName().toStdString();
             return;
         }
         
@@ -75,7 +73,6 @@ void Pearser::reply()
     m_resp->setHeader("Content-Length", QString::number(body.size()));
     m_resp->writeHead(200);
     m_resp->end(body);
-
+    LOG(INFO) << "上传文件请求处理完成.";
     emit success_done(m_pFile->fileName());
-    // Player::instance().play("./audio_file/audio.mp4");
 }
